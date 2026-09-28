@@ -1,31 +1,167 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
-import { AlertTriangle, ArrowRight, BookOpen, CalendarDays, Check, ChevronDown, CircleHelp, Clipboard, Compass, Download, Home, LayoutGrid, MapPin, Menu, MessageCircle, NotebookPen, RotateCcw, Search, ShieldCheck, Sparkles, Target, ToolCase, Users, X, Zap } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  BookOpen,
+  CalendarDays,
+  Check,
+  ChevronDown,
+  CircleHelp,
+  Clipboard,
+  Compass,
+  Download,
+  Home,
+  LayoutGrid,
+  MapPin,
+  Menu,
+  MessageCircle,
+  NotebookPen,
+  RotateCcw,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  ToolCase,
+  Users,
+  X,
+  Zap,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ARRIVAL_CHECKLIST, DEFAULT_GOALS, DOMAINS, FAQ, HELP_CASES, NAV_ITEMS, PHASES, SCHEDULE, SKILLS, TOOLKIT_ITEMS, type Status } from "@/lib/ignite-config";
+import {
+  ARRIVAL_CHECKLIST,
+  DEFAULT_GOALS,
+  DOMAINS,
+  FAQ,
+  HELP_CASES,
+  NAV_ITEMS,
+  PHASES,
+  SCHEDULE,
+  SKILLS,
+  TOOLKIT_ITEMS,
+  type Status,
+} from "@/lib/ignite-config";
 import { loadLocal, resetLocal, saveLocal } from "@/lib/ignite-storage";
 
-type Page = typeof NAV_ITEMS[number][0];
-const icons: Record<Page, typeof Home> = { home: Home, arrive: MapPin, basecamp: Compass, esyasoft: LayoutGrid, days: CalendarDays, learning: NotebookPen, toolkit: ToolCase, voices: Users, mission: Target, final: Sparkles };
-const STATUS_LABELS: Record<Status, string> = { CONFIRMED: "Confirmed", PROPOSED: "Proposed", TBC: "To be confirmed" };
+type Page = (typeof NAV_ITEMS)[number][0];
+const icons: Record<Page, typeof Home> = {
+  home: Home,
+  arrive: MapPin,
+  basecamp: Compass,
+  esyasoft: LayoutGrid,
+  days: CalendarDays,
+  learning: NotebookPen,
+  toolkit: ToolCase,
+  voices: Users,
+  mission: Target,
+  final: Sparkles,
+};
+const STATUS_LABELS: Record<Status, string> = {
+  CONFIRMED: "Confirmed",
+  PROPOSED: "Proposed",
+  TBC: "To be confirmed",
+};
 
-function StatusBadge({ status }: { status: Status }) { return <span className={`status status-${status.toLowerCase()}`}>{STATUS_LABELS[status]}</span>; }
-function SectionTitle({ label, title, copy }: { label: string; title: string; copy: string }) { return <header className="page-title"><p className="eyebrow">{label}</p><h1>{title}</h1><p>{copy}</p></header>; }
-function WhatNext({ next, onGo }: { next: Page; onGo: (p: Page) => void }) { const label = NAV_ITEMS.find(([id]) => id === next)?.[1]; return <div className="what-next"><div><span>WHAT NEXT?</span><strong>{label}</strong></div><Button variant="primary" size="icon" onClick={() => onGo(next)} aria-label={`Go to ${label}`}><ArrowRight size={20}/></Button></div>; }
+function StatusBadge({ status }: { status: Status }) {
+  return <span className={`status status-${status.toLowerCase()}`}>{STATUS_LABELS[status]}</span>;
+}
+function SectionTitle({ label, title, copy }: { label: string; title: string; copy: string }) {
+  return (
+    <header className="page-title">
+      <p className="eyebrow">{label}</p>
+      <h1>{title}</h1>
+      <p>{copy}</p>
+    </header>
+  );
+}
+function WhatNext({ next, onGo }: { next: Page; onGo: (p: Page) => void }) {
+  const label = NAV_ITEMS.find(([id]) => id === next)?.[1];
+  return (
+    <div className="what-next">
+      <div>
+        <span>WHAT NEXT?</span>
+        <strong>{label}</strong>
+      </div>
+      <Button
+        variant="primary"
+        size="icon"
+        onClick={() => onGo(next)}
+        aria-label={`Go to ${label}`}
+      >
+        <ArrowRight size={20} />
+      </Button>
+    </div>
+  );
+}
 
 function getJourney(dateText: string) {
-  const date = new Date(`${dateText}T12:00:00`), arrival = new Date("2026-09-06T12:00:00"), start = new Date("2026-09-07T12:00:00"), end = new Date("2026-12-18T12:00:00");
-  if (date < new Date("2026-08-30T12:00:00")) return { eyebrow: "BEFORE ARRIVAL", title: "Start with your travel checklist.", copy: "Your Mangaluru journey begins on 06 September 2026.", phase: 0, action: "Open arrival checklist", target: "arrive" as Page };
-  if (date < arrival) return { eyebrow: "TRAVEL WINDOW", title: "Get ready for Mangaluru.", copy: "Keep your ID, joining letter, bank details and chargers together.", phase: 0, action: "Prepare for arrival", target: "arrive" as Page };
-  if (date.getTime() === arrival.getTime()) return { eyebrow: "ARRIVAL DAY", title: "You have arrived. Check in next.", copy: "Go to [GATE], say “I am a new GET”, show your ID and collect your room keys.", phase: 0, action: "View check-in steps", target: "arrive" as Page };
-  if (date > end) return { eyebrow: "JOURNEY COMPLETE", title: "You made it.", copy: "Review what you learned and carry your mission forward.", phase: 6, action: "Close the loop", target: "final" as Page };
-  const phase = PHASES.find(p => date >= new Date(`${p.start}T12:00:00`) && date <= new Date(`${p.end}T12:00:00`));
-  if (phase) return { eyebrow: `PHASE ${phase.id} · ${phase.name.toUpperCase()}`, title: `${phase.focus} is your focus now.`, copy: `You are in ${phase.name}. Keep moving with one clear action at a time.`, phase: phase.id, action: "View your 90-day map", target: "days" as Page };
+  const date = new Date(`${dateText}T12:00:00`),
+    arrival = new Date("2026-09-06T12:00:00"),
+    start = new Date("2026-09-07T12:00:00"),
+    end = new Date("2026-12-18T12:00:00");
+  if (date < new Date("2026-08-30T12:00:00"))
+    return {
+      eyebrow: "BEFORE ARRIVAL",
+      title: "Start with your travel checklist.",
+      copy: "Your Mangaluru journey begins on 06 September 2026.",
+      phase: 0,
+      action: "Open arrival checklist",
+      target: "arrive" as Page,
+    };
+  if (date < arrival)
+    return {
+      eyebrow: "TRAVEL WINDOW",
+      title: "Get ready for Mangaluru.",
+      copy: "Keep your ID, joining letter, bank details and chargers together.",
+      phase: 0,
+      action: "Prepare for arrival",
+      target: "arrive" as Page,
+    };
+  if (date.getTime() === arrival.getTime())
+    return {
+      eyebrow: "ARRIVAL DAY",
+      title: "You have arrived. Check in next.",
+      copy: "Go to [GATE], say “I am a new GET”, show your ID and collect your room keys.",
+      phase: 0,
+      action: "View check-in steps",
+      target: "arrive" as Page,
+    };
+  if (date > end)
+    return {
+      eyebrow: "JOURNEY COMPLETE",
+      title: "You made it.",
+      copy: "Review what you learned and carry your mission forward.",
+      phase: 6,
+      action: "Close the loop",
+      target: "final" as Page,
+    };
+  const phase = PHASES.find(
+    (p) => date >= new Date(`${p.start}T12:00:00`) && date <= new Date(`${p.end}T12:00:00`),
+  );
+  if (phase)
+    return {
+      eyebrow: `PHASE ${phase.id} · ${phase.name.toUpperCase()}`,
+      title: `${phase.focus} is your focus now.`,
+      copy: `You are in ${phase.name}. Keep moving with one clear action at a time.`,
+      phase: phase.id,
+      action: "View your 90-day map",
+      target: "days" as Page,
+    };
   const day = Math.floor((date.getTime() - start.getTime()) / 86400000) + 1;
-  return { eyebrow: `DAY ${Math.max(day, 1)} · PAUSE`, title: "No session today.", copy: "Use this gap to review your notes and prepare for what comes next.", phase: 3, action: "Open learning log", target: "learning" as Page };
+  return {
+    eyebrow: `DAY ${Math.max(day, 1)} · PAUSE`,
+    title: "No session today.",
+    copy: "Use this gap to review your notes and prepare for what comes next.",
+    phase: 3,
+    action: "Open learning log",
+    target: "learning" as Page,
+  };
 }
 
 export default function IgniteApp() {
-  const params = typeof window === "undefined" ? new URLSearchParams() : new URLSearchParams(window.location.search);
+  const params =
+    typeof window === "undefined"
+      ? new URLSearchParams()
+      : new URLSearchParams(window.location.search);
   const testingDate = params.get("date");
   const dateText = testingDate || new Date().toISOString().slice(0, 10);
   const [page, setPage] = useState<Page>("home");
@@ -34,52 +170,1062 @@ export default function IgniteApp() {
   const [panel, setPanel] = useState<"help" | "chat" | "search" | "more" | null>(null);
   const [toast, setToast] = useState("");
   const journey = useMemo(() => getJourney(dateText), [dateText]);
-  useEffect(() => { const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches || Boolean((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData); setSimple(loadLocal("simpleView", reduce)); }, []);
-  useEffect(() => { document.documentElement.classList.toggle("simple-view", simple); saveLocal("simpleView", simple); }, [simple]);
-  const go = (next: Page) => { setPage(next); setPanel(null); window.scrollTo({ top: 0, behavior: simple ? "auto" : "smooth" }); };
-  const announce = (message: string) => { setToast(message); window.setTimeout(() => setToast(""), 2600); };
+  useEffect(() => {
+    const reduce =
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      Boolean(
+        (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData,
+      );
+    setSimple(loadLocal("simpleView", reduce));
+  }, []);
+  useEffect(() => {
+    document.documentElement.classList.toggle("simple-view", simple);
+    saveLocal("simpleView", simple);
+  }, [simple]);
+  const go = (next: Page) => {
+    setPage(next);
+    setPanel(null);
+    window.scrollTo({ top: 0, behavior: simple ? "auto" : "smooth" });
+  };
+  const announce = (message: string) => {
+    setToast(message);
+    window.setTimeout(() => setToast(""), 2600);
+  };
   const Current = pageContent[page];
 
-  return <div className={presentation ? "ignite presentation" : "ignite"}>
-    <a href="#main" className="skip-link">Skip to main content</a>
-    {testingDate && <div className="test-banner">Testing as {testingDate}</div>}
-    <div className="ambient" aria-hidden="true" />
-    <aside className="sidebar" aria-label="Journey navigation">
-      <Brand />
-      <nav>{NAV_ITEMS.map(([id,label], index) => { const Icon=icons[id]; return <button key={id} className={page===id?"nav-item active":"nav-item"} onClick={()=>go(id)}><span className="nav-node">{page===id?<Zap size={13}/>:String(index+1).padStart(2,"0")}</span><Icon size={17}/><span>{label}</span>{page===id&&<small>now</small>}</button>; })}</nav>
-      <button className="assistant-card" onClick={()=>setPanel("search")}><span>NOT SURE WHERE TO GO?</span><strong>Tell me what you need</strong><Search size={17}/></button>
-      <p className="privacy-note"><ShieldCheck size={15}/> Your notes stay on this device only.</p>
-    </aside>
-    <div className="app-column">
-      <header className="topbar"><Brand compact/><div className="top-actions"><span className="date-chip">{new Intl.DateTimeFormat("en-GB",{day:"2-digit",month:"short",year:"numeric"}).format(new Date(`${dateText}T12:00:00`))}</span><Button size="sm" onClick={()=>setSimple(v=>!v)}>{simple?"Full view":"Simple view"}</Button><Button size="sm" onClick={()=>setPresentation(v=>!v)}>{presentation?"Exit present":"Present"}</Button><Button variant="primary" size="sm" onClick={()=>setPanel("chat")}><MessageCircle size={15}/> Ask Ignite</Button></div></header>
-      <main id="main" tabIndex={-1}><Current go={go} journey={journey} announce={announce}/></main>
-      <footer className="app-footer"><span><span className="live-dot"/>Local-only progress · no data leaves this device</span><Button onClick={()=>setPanel("help")}><CircleHelp size={17}/> Need Help Now</Button></footer>
+  return (
+    <div className={presentation ? "ignite presentation" : "ignite"}>
+      <a href="#main" className="skip-link">
+        Skip to main content
+      </a>
+      {testingDate && <div className="test-banner">Testing as {testingDate}</div>}
+      <div className="ambient" aria-hidden="true" />
+      <aside className="sidebar" aria-label="Journey navigation">
+        <Brand />
+        <nav>
+          {NAV_ITEMS.map(([id, label], index) => {
+            const Icon = icons[id];
+            return (
+              <button
+                key={id}
+                className={page === id ? "nav-item active" : "nav-item"}
+                onClick={() => go(id)}
+              >
+                <span className="nav-node">
+                  {page === id ? <Zap size={13} /> : String(index + 1).padStart(2, "0")}
+                </span>
+                <Icon size={17} />
+                <span>{label}</span>
+                {page === id && <small>now</small>}
+              </button>
+            );
+          })}
+        </nav>
+        <button className="assistant-card" onClick={() => setPanel("search")}>
+          <span>NOT SURE WHERE TO GO?</span>
+          <strong>Tell me what you need</strong>
+          <Search size={17} />
+        </button>
+        <p className="privacy-note">
+          <ShieldCheck size={15} /> Your notes stay on this device only.
+        </p>
+      </aside>
+      <div className="app-column">
+        <header className="topbar">
+          <Brand compact />
+          <div className="top-actions">
+            <span className="date-chip">
+              {new Intl.DateTimeFormat("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              }).format(new Date(`${dateText}T12:00:00`))}
+            </span>
+            <Button size="sm" onClick={() => setSimple((v) => !v)}>
+              {simple ? "Full view" : "Simple view"}
+            </Button>
+            <Button size="sm" onClick={() => setPresentation((v) => !v)}>
+              {presentation ? "Exit present" : "Present"}
+            </Button>
+            <Button variant="primary" size="sm" onClick={() => setPanel("chat")}>
+              <MessageCircle size={15} /> Ask Ignite
+            </Button>
+          </div>
+        </header>
+        <main id="main" tabIndex={-1}>
+          <Current go={go} journey={journey} announce={announce} />
+        </main>
+        <footer className="app-footer">
+          <span>
+            <span className="live-dot" />
+            Local-only progress · no data leaves this device
+          </span>
+          <Button onClick={() => setPanel("help")}>
+            <CircleHelp size={17} /> Need Help Now
+          </Button>
+        </footer>
+      </div>
+      <MobileNav page={page} go={go} more={() => setPanel("more")} />
+      {panel && (
+        <Panel
+          type={panel}
+          close={() => setPanel(null)}
+          go={go}
+          simple={simple}
+          setSimple={setSimple}
+          announce={announce}
+        />
+      )}
+      <div className="toast" aria-live="polite">
+        {toast}
+      </div>
     </div>
-    <MobileNav page={page} go={go} more={()=>setPanel("more")}/>
-    {panel && <Panel type={panel} close={()=>setPanel(null)} go={go} simple={simple} setSimple={setSimple} announce={announce}/>} 
-    <div className="toast" aria-live="polite">{toast}</div>
-  </div>;
+  );
 }
 
-function Brand({compact=false}:{compact?:boolean}) { return <div className={compact?"brand brand-compact":"brand"}><span className="brand-mark"><Zap size={16}/></span><div><strong>ESYASOFT IGNITE</strong>{!compact&&<small>YOUR 90-DAY JOURNEY</small>}</div></div>; }
-function MobileNav({page,go,more}:{page:Page;go:(p:Page)=>void;more:()=>void}) { const items: Page[]=["home","arrive","days","learning"]; return <nav className="mobile-nav">{items.map(id=>{const I=icons[id];return <button className={page===id?"active":""} onClick={()=>go(id)} key={id}><I size={20}/><span>{NAV_ITEMS.find(n=>n[0]===id)?.[1]}</span></button>})}<button onClick={more}><Menu size={20}/><span>More</span></button></nav>; }
+function Brand({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className={compact ? "brand brand-compact" : "brand"}>
+      <span className="brand-mark">
+        <Zap size={16} />
+      </span>
+      <div>
+        <strong>ESYASOFT IGNITE</strong>
+        {!compact && <small>YOUR 90-DAY JOURNEY</small>}
+      </div>
+    </div>
+  );
+}
+function MobileNav({ page, go, more }: { page: Page; go: (p: Page) => void; more: () => void }) {
+  const items: Page[] = ["home", "arrive", "days", "learning"];
+  return (
+    <nav className="mobile-nav">
+      {items.map((id) => {
+        const I = icons[id];
+        return (
+          <button className={page === id ? "active" : ""} onClick={() => go(id)} key={id}>
+            <I size={20} />
+            <span>{NAV_ITEMS.find((n) => n[0] === id)?.[1]}</span>
+          </button>
+        );
+      })}
+      <button onClick={more}>
+        <Menu size={20} />
+        <span>More</span>
+      </button>
+    </nav>
+  );
+}
 
-type ContentProps={go:(p:Page)=>void;journey:ReturnType<typeof getJourney>;announce:(s:string)=>void};
-const pageContent: Record<Page,(p:ContentProps)=>ReactNode> = {
-  home: HomePage, arrive: ArrivePage, basecamp: BasecampPage, esyasoft: EsyasoftPage, days: DaysPage,
-  learning: LearningPage, toolkit: ToolkitPage, voices: VoicesPage, mission: MissionPage, final: FinalPage,
+type ContentProps = {
+  go: (p: Page) => void;
+  journey: ReturnType<typeof getJourney>;
+  announce: (s: string) => void;
 };
-function HomePage({go,journey}:ContentProps){return <div className="page home-page"><div className="home-grid"><section className="primary-panel"><div className="eyebrow"><span className="live-dot"/>CURRENT JOURNEY · CONFIRMED</div><h1>{journey.title}</h1><p>{journey.copy}</p><div className="next-step"><small>NEXT STEP</small><strong>{journey.action}</strong><StatusBadge status="CONFIRMED"/></div><Button variant="primary" onClick={()=>go(journey.target)}>{journey.action}<ArrowRight size={18}/></Button></section><div className="side-stack"><PhaseCard current={journey.phase}/><section className="panel"><p className="eyebrow">YOUR QUICK ROUTES</p><div className="quick-grid"><button onClick={()=>go("arrive")}><MapPin/>Arrive</button><button onClick={()=>go("days")}><CalendarDays/>90 Days</button><button onClick={()=>go("esyasoft")}><LayoutGrid/>The Grid</button><button onClick={()=>go("basecamp")}><Compass/>Basecamp</button><button onClick={()=>go("learning")}><BookOpen/>Learning</button><button onClick={()=>go("mission")}><Target/>Mission</button></div></section></div></div><section className="principle"><span>SEE</span><i/><span>UNDERSTAND</span><i/><strong>DO</strong><p>You should always know what to do next.</p></section><WhatNext next="arrive" onGo={go}/></div>}
-function PhaseCard({current}:{current:number}){return <section className="panel"><div className="panel-heading"><p className="eyebrow">90-DAY PHASE PATH</p><span>{current?`Phase ${current}`:"Prepare"}</span></div><div className="phase-track">{PHASES.map(p=><span key={p.id} className={p.id<=current?"filled":""}/>)}</div><div className="phase-labels"><span>Power on</span><span className="current">{current?PHASES[current-1]?.name:"Arrival"}</span><span>Close loop</span></div></section>}
-function ArrivePage({go,announce}:ContentProps){const [done,setDone]=useState<string[]>(()=>loadLocal("arrivalChecklist",[])); const toggle=(item:string)=>{const n=done.includes(item)?done.filter(x=>x!==item):[...done,item];setDone(n);saveLocal("arrivalChecklist",n)};return <div className="page"><SectionTitle label="ARRIVE · 06 SEP 2026" title="Reach Mangaluru with a clear plan." copy="Four stages. Short steps. No guessing."/><div className="split"><section className="section-block"><h2>01 · Before you travel</h2><StatusBadge status="CONFIRMED"/><div className="checklist">{ARRIVAL_CHECKLIST.map(x=><label key={x}><input type="checkbox" checked={done.includes(x)} onChange={()=>toggle(x)}/><span><Check size={16}/></span>{x}</label>)}</div></section><section className="arrival-card"><div><p className="eyebrow">DIGITAL ARRIVAL CARD</p><StatusBadge status="TBC"/></div><h2>Mangaluru campus</h2><dl><dt>Address</dt><dd>[INSERT ADDRESS]</dd><dt>Reporting time</dt><dd>[INSERT REPORTING TIME]</dd><dt>Contact</dt><dd>[INSERT CONTACT]</dd></dl><div className="button-row"><Button onClick={()=>{navigator.clipboard?.writeText("Mangaluru campus\n[INSERT ADDRESS]\n[INSERT CONTACT]");announce("Arrival card copied")}}><Clipboard size={16}/>Copy</Button><Button onClick={()=>window.print()}>Print / PDF</Button></div></section></div><div className="step-list">{[["02","Choose how you travel","Air: Mangaluru International Airport. Train: Mangaluru Central or Mangaluru Junction. Public hubs are proposed; pickup and reimbursement are to be confirmed."],["03","Check in at campus","Go to [GATE]. Say “I am a new GET.” Show your ID, collect your room keys, then settle in."],["04","Prepare for Day 1","Welcome kit and laptop are provided. Wi-Fi steps, ID badge location and dress policy are to be confirmed."]].map(([n,t,c],i)=><details key={n} open={i===0}><summary><span>{n}</span><strong>{t}</strong><StatusBadge status={i===0?"PROPOSED":"TBC"}/><ChevronDown/></summary><p>{c}</p>{n==="02"&&<em>Keep every ticket and receipt until this is confirmed.</em>}</details>)}</div><WhatNext next="basecamp" onGo={go}/></div>}
-function BasecampPage({go}:ContentProps){return <div className="page"><SectionTitle label="BASECAMP & MANGALURU" title="Make a new city feel manageable." copy="Start with the places and routines you will need most."/><div className="feature-grid">{[["Accommodation","Room allocation and support: [INSERT DETAILS]","TBC"],["Food","Meal locations and timings: [INSERT DETAILS]","TBC"],["Gym & games","Gym and Snooker are available. Access details: [INSERT DETAILS]","TBC"],["Saturday shuttle","09:30 AM to 06:30 PM","CONFIRMED"]].map(([a,b,s])=><article className="panel" key={a}><StatusBadge status={s as Status}/><h2>{a}</h2><p>{b}</p></article>)}</div><section className="section-block"><h2>Local language basics</h2><StatusBadge status="PROPOSED"/><p>These common greetings need a native-speaker check before release.</p><div className="phrase-row"><span>Namaskara</span><span>Dhanyavadagalu</span><span>Yencha ullar?</span><span>Barpe</span></div></section><WhatNext next="esyasoft" onGo={go}/></div>}
-function EsyasoftPage({go}:ContentProps){const [active,setActive]=useState(0);const domain=DOMAINS[active]??DOMAINS[0];if(!domain)return null;return <div className="page"><SectionTitle label="ESYASOFT GRID" title="See how the energy ecosystem connects." copy="Choose a node for a plain-English starting point."/><div className="domain-layout"><div className="domain-map">{DOMAINS.map(([name],i)=><button key={name} onClick={()=>setActive(i)} className={active===i?"active":""}><span>{String(i+1).padStart(2,"0")}</span>{name}</button>)}</div><section className="domain-detail panel"><StatusBadge status="PROPOSED"/><p className="eyebrow">NODE {String(active+1).padStart(2,"0")}</p><h2>{domain[0]}</h2><p>{domain[1]}</p><hr/><h3>How it connects to your journey</h3><p>[INSERT COMPANY-SPECIFIC CONNECTION]</p><StatusBadge status="TBC"/></section></div><WhatNext next="days" onGo={go}/></div>}
-function DaysPage({go}:ContentProps){const [active,setActive]=useState(2);const phase=PHASES[active]??PHASES[0];if(!phase)return null;return <div className="page"><SectionTitle label="90-DAY POWER MAP" title="Power the grid, one phase at a time." copy="Real dates, clear gaps, and no hidden expectations."/><div className="phase-selector">{PHASES.map((p,i)=><button key={p.id} className={active===i?"active":""} onClick={()=>setActive(i)}><span>{p.id}</span><small>{p.dates}</small><strong>{p.name}</strong></button>)}</div><section className="phase-detail"><div><p className="eyebrow">PHASE {phase.id}</p><h2>{phase.name}</h2><p>{phase.focus}</p>{active===4&&<p className="notice">Choosing a specialization track does not guarantee assignment to a particular team.</p>}{active>=4&&<p className="notice"><AlertTriangle size={16}/>Phases 5 and 6 overlap on 11 December. This needs confirmation.</p>}</div><StatusBadge status={phase.status}/></section><section className="section-block schedule"><div><h2>Confirmed domain sessions</h2><StatusBadge status="CONFIRMED"/></div>{SCHEDULE.map(([d,t,w])=><div className="schedule-row" key={d}><time>{d}</time><strong>{t}</strong><span>{w}</span></div>)}</section><WhatNext next="learning" onGo={go}/></div>}
-function LearningPage({go,announce}:ContentProps){const [entries,setEntries]=useState<string[]>(()=>loadLocal("learningLog",[]));const [text,setText]=useState("");const add=(e:FormEvent)=>{e.preventDefault();if(!text.trim())return;const n=[text.trim(),...entries];setEntries(n);saveLocal("learningLog",n);setText("")};const download=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([entries.join("\n\n")],{type:"text/plain"}));a.download="ignite-learning-log.txt";a.click();URL.revokeObjectURL(a.href);announce("Learning log downloaded")};return <div className="page"><SectionTitle label="LEARNING LOG" title="Notice what changed in your thinking." copy="Your notes stay on this device only."/><section className="section-block"><form onSubmit={add} className="entry-form"><label htmlFor="learning">What did you learn, notice, or question?</label><textarea id="learning" value={text} onChange={e=>setText(e.target.value)} placeholder="Write a short reflection…"/><div className="button-row"><Button variant="primary">Save entry</Button><Button type="button" onClick={download} disabled={!entries.length}><Download size={16}/>Export as text</Button></div></form></section><div className="entry-list">{entries.length?entries.map((e,i)=><article className="panel" key={`${e}-${i}`}><p>{e}</p><Button size="sm" onClick={()=>{const n=entries.filter((_,j)=>j!==i);setEntries(n);saveLocal("learningLog",n)}}>Delete</Button></article>):<div className="empty-state"><BookOpen/><strong>Your first reflection starts here.</strong><span>No entry is too small.</span></div>}</div><Skills/><WhatNext next="toolkit" onGo={go}/></div>}
-function Skills(){const [scores,setScores]=useState<Record<string,number>>(()=>loadLocal("skills",Object.fromEntries(SKILLS.map(s=>[s,3]))));return <section className="section-block"><div><h2>Private skills snapshot</h2><StatusBadge status="PROPOSED"/></div><div className="skills">{SKILLS.map(skill=><label key={skill}><span>{skill}<strong>{scores[skill]}/5</strong></span><input type="range" min="1" max="5" value={scores[skill]} onChange={e=>{const n={...scores,[skill]:Number(e.target.value)};setScores(n);saveLocal("skills",n)}}/></label>)}</div></section>}
-function ToolkitPage({go}:ContentProps){const [items,setItems]=useState<Record<string,string>>(()=>loadLocal("toolkit",Object.fromEntries(TOOLKIT_ITEMS.map(x=>[x,"Not started"]))));const update=(x:string,v:string)=>{const n={...items,[x]:v};setItems(n);saveLocal("toolkit",n)};const done=Object.values(items).filter(x=>x==="Done").length;return <div className="page"><SectionTitle label="GET TOOLKIT" title="Set up your digital backpack." copy={`${done} of ${TOOLKIT_ITEMS.length} tools marked done.`}/><div className="progress"><span style={{width:`${done/TOOLKIT_ITEMS.length*100}%`}}/></div><div className="tool-list">{TOOLKIT_ITEMS.map(item=><div className="tool-row" key={item}><strong>{item}</strong><select value={items[item]} onChange={e=>update(item,e.target.value)} aria-label={`${item} status`}><option>Not started</option><option>In progress</option><option>Done</option></select></div>)}</div><p className="notice"><StatusBadge status="TBC"/> Setup instructions and official access links are still to be confirmed.</p><WhatNext next="voices" onGo={go}/></div>}
-function VoicesPage({go}:ContentProps){return <div className="page"><SectionTitle label="INSIDER VOICES" title="Hear from people who have made the journey." copy="Real voices will appear here after they are approved."/><div className="voices-grid">{[1,2,3].map(n=><figure className="voice" key={n}><StatusBadge status="TBC"/><blockquote>“[INSERT APPROVED QUOTE]”</blockquote><figcaption>[INSERT NAME, ROLE]</figcaption></figure>)}</div><WhatNext next="mission" onGo={go}/></div>}
-function MissionPage({go}:ContentProps){const [goals,setGoals]=useState<{t:string;done:boolean}[]>(()=>loadLocal("mission",DEFAULT_GOALS.map(t=>({t,done:false}))));const [text,setText]=useState("");const save=(n:{t:string;done:boolean}[])=>{setGoals(n);saveLocal("mission",n)};return <div className="page"><SectionTitle label="MY 90-DAY MISSION" title="Choose what you want to carry forward." copy="No scores. Just meaningful progress you can see."/><section className="section-block"><div className="mission-list">{goals.map((g,i)=><label key={`${g.t}-${i}`}><input type="checkbox" checked={g.done} onChange={()=>save(goals.map((x,j)=>j===i?{...x,done:!x.done}:x))}/><span><Check/></span><strong>{g.t}</strong></label>)}</div><form className="goal-form" onSubmit={e=>{e.preventDefault();if(text.trim()){save([...goals,{t:text.trim(),done:false}]);setText("")}}}><input value={text} onChange={e=>setText(e.target.value)} placeholder="Add your own goal" aria-label="New mission goal"/><Button variant="primary">Add goal</Button></form></section><PhaseCard current={Math.max(1,Math.round(goals.filter(g=>g.done).length/goals.length*6))}/><WhatNext next="final" onGo={go}/></div>}
-function FinalPage({go}:ContentProps){return <div className="page final-page"><div className="final-mark"><Zap/></div><p className="eyebrow">CLOSE THE LOOP · 11–18 DEC</p><h1>You made it.</h1><p>Your 90-day journey ends with Demo Day and felicitation. Take your learning, questions, and mission into what comes next.</p><StatusBadge status="TBC"/><div className="notice"><AlertTriangle/>Phase 6 overlaps Phase 5 on 11 December. The dates are shown exactly as provided and need confirmation.</div><Button variant="primary" onClick={()=>go("home")}>Return home<ArrowRight/></Button></div>}
+const pageContent: Record<Page, (p: ContentProps) => ReactNode> = {
+  home: HomePage,
+  arrive: ArrivePage,
+  basecamp: BasecampPage,
+  esyasoft: EsyasoftPage,
+  days: DaysPage,
+  learning: LearningPage,
+  toolkit: ToolkitPage,
+  voices: VoicesPage,
+  mission: MissionPage,
+  final: FinalPage,
+};
+function HomePage({ go, journey }: ContentProps) {
+  return (
+    <div className="page home-page">
+      <div className="home-grid">
+        <section className="primary-panel">
+          <div className="eyebrow">
+            <span className="live-dot" />
+            CURRENT JOURNEY · CONFIRMED
+          </div>
+          <h1>{journey.title}</h1>
+          <p>{journey.copy}</p>
+          <div className="next-step">
+            <small>NEXT STEP</small>
+            <strong>{journey.action}</strong>
+            <StatusBadge status="CONFIRMED" />
+          </div>
+          <Button variant="primary" onClick={() => go(journey.target)}>
+            {journey.action}
+            <ArrowRight size={18} />
+          </Button>
+        </section>
+        <div className="side-stack">
+          <PhaseCard current={journey.phase} />
+          <section className="panel">
+            <p className="eyebrow">YOUR QUICK ROUTES</p>
+            <div className="quick-grid">
+              <button onClick={() => go("arrive")}>
+                <MapPin />
+                Arrive
+              </button>
+              <button onClick={() => go("days")}>
+                <CalendarDays />
+                90 Days
+              </button>
+              <button onClick={() => go("esyasoft")}>
+                <LayoutGrid />
+                The Grid
+              </button>
+              <button onClick={() => go("basecamp")}>
+                <Compass />
+                Basecamp
+              </button>
+              <button onClick={() => go("learning")}>
+                <BookOpen />
+                Learning
+              </button>
+              <button onClick={() => go("mission")}>
+                <Target />
+                Mission
+              </button>
+            </div>
+          </section>
+        </div>
+      </div>
+      <section className="principle">
+        <span>SEE</span>
+        <i />
+        <span>UNDERSTAND</span>
+        <i />
+        <strong>DO</strong>
+        <p>You should always know what to do next.</p>
+      </section>
+      <WhatNext next="arrive" onGo={go} />
+    </div>
+  );
+}
+function PhaseCard({ current }: { current: number }) {
+  return (
+    <section className="panel">
+      <div className="panel-heading">
+        <p className="eyebrow">90-DAY PHASE PATH</p>
+        <span>{current ? `Phase ${current}` : "Prepare"}</span>
+      </div>
+      <div className="phase-track">
+        {PHASES.map((p) => (
+          <span key={p.id} className={p.id <= current ? "filled" : ""} />
+        ))}
+      </div>
+      <div className="phase-labels">
+        <span>Power on</span>
+        <span className="current">{current ? PHASES[current - 1]?.name : "Arrival"}</span>
+        <span>Close loop</span>
+      </div>
+    </section>
+  );
+}
+function ArrivePage({ go, announce }: ContentProps) {
+  const [done, setDone] = useState<string[]>(() => loadLocal("arrivalChecklist", []));
+  const toggle = (item: string) => {
+    const n = done.includes(item) ? done.filter((x) => x !== item) : [...done, item];
+    setDone(n);
+    saveLocal("arrivalChecklist", n);
+  };
+  return (
+    <div className="page">
+      <SectionTitle
+        label="ARRIVE · 06 SEP 2026"
+        title="Reach Mangaluru with a clear plan."
+        copy="Four stages. Short steps. No guessing."
+      />
+      <div className="split">
+        <section className="section-block">
+          <h2>01 · Before you travel</h2>
+          <StatusBadge status="CONFIRMED" />
+          <div className="checklist">
+            {ARRIVAL_CHECKLIST.map((x) => (
+              <label key={x}>
+                <input type="checkbox" checked={done.includes(x)} onChange={() => toggle(x)} />
+                <span>
+                  <Check size={16} />
+                </span>
+                {x}
+              </label>
+            ))}
+          </div>
+        </section>
+        <section className="arrival-card">
+          <div>
+            <p className="eyebrow">DIGITAL ARRIVAL CARD</p>
+            <StatusBadge status="TBC" />
+          </div>
+          <h2>Mangaluru campus</h2>
+          <dl>
+            <dt>Address</dt>
+            <dd>[INSERT ADDRESS]</dd>
+            <dt>Reporting time</dt>
+            <dd>[INSERT REPORTING TIME]</dd>
+            <dt>Contact</dt>
+            <dd>[INSERT CONTACT]</dd>
+          </dl>
+          <div className="button-row">
+            <Button
+              onClick={() => {
+                navigator.clipboard?.writeText(
+                  "Mangaluru campus\n[INSERT ADDRESS]\n[INSERT CONTACT]",
+                );
+                announce("Arrival card copied");
+              }}
+            >
+              <Clipboard size={16} />
+              Copy
+            </Button>
+            <Button onClick={() => window.print()}>Print / PDF</Button>
+          </div>
+        </section>
+      </div>
+      <div className="step-list">
+        {[
+          [
+            "02",
+            "Choose how you travel",
+            "Air: Mangaluru International Airport. Train: Mangaluru Central or Mangaluru Junction. Public hubs are proposed; pickup and reimbursement are to be confirmed.",
+          ],
+          [
+            "03",
+            "Check in at campus",
+            "Go to [GATE]. Say “I am a new GET.” Show your ID, collect your room keys, then settle in.",
+          ],
+          [
+            "04",
+            "Prepare for Day 1",
+            "Welcome kit and laptop are provided. Wi-Fi steps, ID badge location and dress policy are to be confirmed.",
+          ],
+        ].map(([n, t, c], i) => (
+          <details key={n} open={i === 0}>
+            <summary>
+              <span>{n}</span>
+              <strong>{t}</strong>
+              <StatusBadge status={i === 0 ? "PROPOSED" : "TBC"} />
+              <ChevronDown />
+            </summary>
+            <p>{c}</p>
+            {n === "02" && <em>Keep every ticket and receipt until this is confirmed.</em>}
+          </details>
+        ))}
+      </div>
+      <WhatNext next="basecamp" onGo={go} />
+    </div>
+  );
+}
+function BasecampPage({ go }: ContentProps) {
+  return (
+    <div className="page">
+      <SectionTitle
+        label="BASECAMP & MANGALURU"
+        title="Make a new city feel manageable."
+        copy="Start with the places and routines you will need most."
+      />
+      <div className="feature-grid">
+        {[
+          ["Accommodation", "Room allocation and support: [INSERT DETAILS]", "TBC"],
+          ["Food", "Meal locations and timings: [INSERT DETAILS]", "TBC"],
+          ["Gym & games", "Gym and Snooker are available. Access details: [INSERT DETAILS]", "TBC"],
+          ["Saturday shuttle", "09:30 AM to 06:30 PM", "CONFIRMED"],
+        ].map(([a, b, s]) => (
+          <article className="panel" key={a}>
+            <StatusBadge status={s as Status} />
+            <h2>{a}</h2>
+            <p>{b}</p>
+          </article>
+        ))}
+      </div>
+      <section className="section-block">
+        <h2>Local language basics</h2>
+        <StatusBadge status="PROPOSED" />
+        <p>These common greetings need a native-speaker check before release.</p>
+        <div className="phrase-row">
+          <span>Namaskara</span>
+          <span>Dhanyavadagalu</span>
+          <span>Yencha ullar?</span>
+          <span>Barpe</span>
+        </div>
+      </section>
+      <WhatNext next="esyasoft" onGo={go} />
+    </div>
+  );
+}
+function EsyasoftPage({ go }: ContentProps) {
+  const [active, setActive] = useState(0);
 
-function Panel({type,close,go,simple,setSimple,announce}:{type:string;close:()=>void;go:(p:Page)=>void;simple:boolean;setSimple:(v:boolean)=>void;announce:(s:string)=>void}){const [query,setQuery]=useState("");const [answer,setAnswer]=useState<(typeof FAQ)[number]|null>(null);const matches=NAV_ITEMS.filter(([,label])=>label.toLowerCase().includes(query.toLowerCase())||({arrive:"travel airport train road check in reimbursement",basecamp:"room food gym city shuttle pharmacy atm",esyasoft:"bess mdms company grid domains",days:"schedule session phase calendar",learning:"notes skills reflection",toolkit:"zoom teams zoho setup",mission:"goals progress"} as Record<string,string>)[label.toLowerCase()]?.includes(query.toLowerCase())).slice(0,5);const ask=(q:string)=>{setQuery(q);const words=q.toLowerCase().split(/\W+/);const ranked=FAQ.map(f=>({...f,score:words.filter(w=>w.length>2&&(f.keys+f.q).toLowerCase().includes(w)).length})).sort((a,b)=>b.score-a.score);const best=ranked[0];setAnswer(best?.score?best:{q:"Unknown",keys:"",a:"I don't have confirmed information for that yet. Please check with the programme team at [INSERT CONTACT].",status:"TBC",page:"home"})};return <div className="panel-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)close()}}><section className="drawer" role="dialog" aria-modal="true" aria-label={type}><header><div><p className="eyebrow">ESYASOFT IGNITE</p><h2>{type==="help"?"Need help now?":type==="chat"?"Ask Ignite":type==="search"?"Where do you need to go?":"More"}</h2></div><Button size="icon" onClick={close} aria-label="Close"><X/></Button></header>{type==="help"&&<div className="help-list">{HELP_CASES.map(x=><details key={x}><summary>{x}<ChevronDown/></summary><ol><li>Move to a safe, visible place.</li><li>Keep your ID and travel details with you.</li><li>Contact the programme team at [INSERT CONTACT].</li></ol><StatusBadge status="TBC"/></details>)}</div>}{type==="search"&&<><label className="searchbox"><Search/><input autoFocus value={query} onChange={e=>setQuery(e.target.value)} placeholder="Try room, shuttle, schedule…"/></label>{query&&<div className="results">{matches.map(([id,label])=><button key={id} onClick={()=>go(id)}><strong>{label}</strong><ArrowRight/></button>)}</div>}</>}{type==="chat"&&<><p className="chat-intro">No question is too small. Answers only use confirmed or clearly labelled information.</p><form className="searchbox" onSubmit={e=>{e.preventDefault();ask(query)}}><MessageCircle/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Ask about travel, campus or the programme"/><Button variant="primary" size="sm">Ask</Button></form><div className="chips">{FAQ.slice(0,4).map(f=><button onClick={()=>ask(f.q)} key={f.q}>{f.q}</button>)}</div>{answer&&<div className="chat-answer" aria-live="polite"><StatusBadge status={answer.status}/><p>{answer.a}</p><Button size="sm" onClick={()=>go(answer.page as Page)}>Take me there<ArrowRight/></Button></div>}</>}{type==="more"&&<div className="more-list">{NAV_ITEMS.slice(4).map(([id,label])=><button key={id} onClick={()=>go(id)}>{label}<ArrowRight/></button>)}<label className="toggle-row">Simple View<input type="checkbox" checked={simple} onChange={e=>setSimple(e.target.checked)}/></label><Button variant="danger" onClick={()=>{if(window.confirm("Reset all progress saved on this device?")){resetLocal();announce("Progress reset");window.location.reload()}}}><RotateCcw/>Reset progress</Button></div>}</section></div>}
+  const domain = DOMAINS[active] ?? DOMAINS[0];
+
+  if (!domain) return null;
+
+  const domainImages = [
+    "/images/smart-utilities.jpg",
+    "/images/software-ai.png",
+    "/images/energy-as-a-service.jpg",
+    "/images/bess.jpg",
+    "/images/e-mobility.jpg",
+  ];
+
+  const domainHighlights = ["Smart meters", "Data intelligence", "Digital infrastructure"];
+
+  const selectedImage = domainImages[active] ?? domainImages[0];
+
+  return (
+    <div className="page">
+      <SectionTitle
+        label="ESYASOFT GRID"
+        title="See how the energy ecosystem connects."
+        copy="Explore the domains that power modern energy, software and mobility solutions."
+      />
+
+      <section className="grid-intro">
+        <div>
+          <p className="eyebrow">EXPLORE THE ECOSYSTEM</p>
+          <h2>Five domains. One connected ecosystem.</h2>
+          <p>
+            Your domain training introduces you to different parts of the Esyasoft ecosystem. Select
+            a domain to understand what it does, why it matters and how it connects to your journey.
+          </p>
+        </div>
+
+        <div className="grid-counter">
+          <span>SELECTED NODE</span>
+          <strong>
+            {String(active + 1).padStart(2, "0")}
+            <small>/05</small>
+          </strong>
+        </div>
+      </section>
+
+      <div className="domain-explorer">
+        {/* DOMAIN NAVIGATION */}
+        <div className="domain-list">
+          <p className="eyebrow">DOMAIN MAP</p>
+
+          {DOMAINS.map(([name], i) => (
+            <button
+              key={name}
+              onClick={() => setActive(i)}
+              className={`domain-option ${active === i ? "active" : ""}`}
+            >
+              <span className="domain-number">{String(i + 1).padStart(2, "0")}</span>
+
+              <span className="domain-name">{name}</span>
+
+              <ArrowRight size={17} />
+            </button>
+          ))}
+        </div>
+
+        {/* SELECTED DOMAIN */}
+        <section className="domain-showcase">
+          <div className="domain-image">
+            <img src={selectedImage} alt={`${domain[0]} domain`} />
+
+            <div className="image-overlay">
+              <span>ESYASOFT GRID</span>
+              <strong>NODE {String(active + 1).padStart(2, "0")}</strong>
+            </div>
+          </div>
+
+          <div className="domain-content">
+            <div className="domain-status-row">
+              <StatusBadge status="PROPOSED" />
+
+              <span className="domain-tag">DOMAIN {String(active + 1).padStart(2, "0")}</span>
+            </div>
+
+            <h2>{domain[0]}</h2>
+
+            <p className="domain-description">{domain[1]}</p>
+
+            <div className="domain-divider" />
+
+            <div className="domain-connection">
+              <div>
+                <p className="eyebrow">HOW IT CONNECTS TO YOUR JOURNEY</p>
+
+                <h3>Understand the bigger picture.</h3>
+
+                <p>
+                  This domain is part of the wider ecosystem you will explore during your training.
+                  Use your domain sessions to understand the technologies, projects and business
+                  problems connected to this area.
+                </p>
+              </div>
+
+              <StatusBadge status="TBC" />
+            </div>
+
+            <div className="domain-highlights">
+              {domainHighlights.map((item, index) => (
+                <div key={item}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+
+                  <strong>{item}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* DOMAIN CARDS */}
+      <section className="domain-cards-section">
+        <div className="domain-cards-heading">
+          <div>
+            <p className="eyebrow">THE FIVE NODES</p>
+            <h2>Explore each part of the grid.</h2>
+          </div>
+
+          <p>Select any domain above or choose a card below to explore it.</p>
+        </div>
+
+        <div className="domain-cards">
+          {DOMAINS.map(([name, description], i) => (
+            <button
+              key={name}
+              className={`domain-card ${active === i ? "active" : ""}`}
+              onClick={() => {
+                setActive(i);
+                window.scrollTo({
+                  top: 0,
+                  behavior: "smooth",
+                });
+              }}
+            >
+              <div className="domain-card-image">
+                <img src={domainImages[i]} alt={`${name} illustration`} />
+
+                <span>{String(i + 1).padStart(2, "0")}</span>
+              </div>
+
+              <div className="domain-card-content">
+                <h3>{name}</h3>
+
+                <p>{description}</p>
+
+                <span className="domain-card-link">
+                  Explore domain
+                  <ArrowRight size={16} />
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <WhatNext next="days" onGo={go} />
+    </div>
+  );
+}
+function DaysPage({ go }: ContentProps) {
+  const [active, setActive] = useState(2);
+  const phase = PHASES[active] ?? PHASES[0];
+  if (!phase) return null;
+  return (
+    <div className="page">
+      <SectionTitle
+        label="90-DAY POWER MAP"
+        title="Power the grid, one phase at a time."
+        copy="Real dates, clear gaps, and no hidden expectations."
+      />
+      <div className="phase-selector">
+        {PHASES.map((p, i) => (
+          <button key={p.id} className={active === i ? "active" : ""} onClick={() => setActive(i)}>
+            <span>{p.id}</span>
+            <small>{p.dates}</small>
+            <strong>{p.name}</strong>
+          </button>
+        ))}
+      </div>
+      <section className="phase-detail">
+        <div>
+          <p className="eyebrow">PHASE {phase.id}</p>
+          <h2>{phase.name}</h2>
+          <p>{phase.focus}</p>
+          {active === 4 && (
+            <p className="notice">
+              Choosing a specialization track does not guarantee assignment to a particular team.
+            </p>
+          )}
+          {active >= 4 && (
+            <p className="notice">
+              <AlertTriangle size={16} />
+              Phases 5 and 6 overlap on 11 December. This needs confirmation.
+            </p>
+          )}
+        </div>
+        <StatusBadge status={phase.status} />
+      </section>
+      <section className="section-block schedule">
+        <div>
+          <h2>Confirmed domain sessions</h2>
+          <StatusBadge status="CONFIRMED" />
+        </div>
+        {SCHEDULE.map(([d, t, w]) => (
+          <div className="schedule-row" key={d}>
+            <time>{d}</time>
+            <strong>{t}</strong>
+            <span>{w}</span>
+          </div>
+        ))}
+      </section>
+      <WhatNext next="learning" onGo={go} />
+    </div>
+  );
+}
+function LearningPage({ go, announce }: ContentProps) {
+  const [entries, setEntries] = useState<string[]>(() => loadLocal("learningLog", []));
+  const [text, setText] = useState("");
+  const add = (e: FormEvent) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    const n = [text.trim(), ...entries];
+    setEntries(n);
+    saveLocal("learningLog", n);
+    setText("");
+  };
+  const download = () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([entries.join("\n\n")], { type: "text/plain" }));
+    a.download = "ignite-learning-log.txt";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    announce("Learning log downloaded");
+  };
+  return (
+    <div className="page">
+      <SectionTitle
+        label="LEARNING LOG"
+        title="Notice what changed in your thinking."
+        copy="Your notes stay on this device only."
+      />
+      <section className="section-block">
+        <form onSubmit={add} className="entry-form">
+          <label htmlFor="learning">What did you learn, notice, or question?</label>
+          <textarea
+            id="learning"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Write a short reflection…"
+          />
+          <div className="button-row">
+            <Button variant="primary">Save entry</Button>
+            <Button type="button" onClick={download} disabled={!entries.length}>
+              <Download size={16} />
+              Export as text
+            </Button>
+          </div>
+        </form>
+      </section>
+      <div className="entry-list">
+        {entries.length ? (
+          entries.map((e, i) => (
+            <article className="panel" key={`${e}-${i}`}>
+              <p>{e}</p>
+              <Button
+                size="sm"
+                onClick={() => {
+                  const n = entries.filter((_, j) => j !== i);
+                  setEntries(n);
+                  saveLocal("learningLog", n);
+                }}
+              >
+                Delete
+              </Button>
+            </article>
+          ))
+        ) : (
+          <div className="empty-state">
+            <BookOpen />
+            <strong>Your first reflection starts here.</strong>
+            <span>No entry is too small.</span>
+          </div>
+        )}
+      </div>
+      <Skills />
+      <WhatNext next="toolkit" onGo={go} />
+    </div>
+  );
+}
+function Skills() {
+  const [scores, setScores] = useState<Record<string, number>>(() =>
+    loadLocal("skills", Object.fromEntries(SKILLS.map((s) => [s, 3]))),
+  );
+  return (
+    <section className="section-block">
+      <div>
+        <h2>Private skills snapshot</h2>
+        <StatusBadge status="PROPOSED" />
+      </div>
+      <div className="skills">
+        {SKILLS.map((skill) => (
+          <label key={skill}>
+            <span>
+              {skill}
+              <strong>{scores[skill]}/5</strong>
+            </span>
+            <input
+              type="range"
+              min="1"
+              max="5"
+              value={scores[skill]}
+              onChange={(e) => {
+                const n = { ...scores, [skill]: Number(e.target.value) };
+                setScores(n);
+                saveLocal("skills", n);
+              }}
+            />
+          </label>
+        ))}
+      </div>
+    </section>
+  );
+}
+function ToolkitPage({ go }: ContentProps) {
+  const [items, setItems] = useState<Record<string, string>>(() =>
+    loadLocal("toolkit", Object.fromEntries(TOOLKIT_ITEMS.map((x) => [x, "Not started"]))),
+  );
+  const update = (x: string, v: string) => {
+    const n = { ...items, [x]: v };
+    setItems(n);
+    saveLocal("toolkit", n);
+  };
+  const done = Object.values(items).filter((x) => x === "Done").length;
+  return (
+    <div className="page">
+      <SectionTitle
+        label="GET TOOLKIT"
+        title="Set up your digital backpack."
+        copy={`${done} of ${TOOLKIT_ITEMS.length} tools marked done.`}
+      />
+      <div className="progress">
+        <span style={{ width: `${(done / TOOLKIT_ITEMS.length) * 100}%` }} />
+      </div>
+      <div className="tool-list">
+        {TOOLKIT_ITEMS.map((item) => (
+          <div className="tool-row" key={item}>
+            <strong>{item}</strong>
+            <select
+              value={items[item]}
+              onChange={(e) => update(item, e.target.value)}
+              aria-label={`${item} status`}
+            >
+              <option>Not started</option>
+              <option>In progress</option>
+              <option>Done</option>
+            </select>
+          </div>
+        ))}
+      </div>
+      <p className="notice">
+        <StatusBadge status="TBC" /> Setup instructions and official access links are still to be
+        confirmed.
+      </p>
+      <WhatNext next="voices" onGo={go} />
+    </div>
+  );
+}
+function VoicesPage({ go }: ContentProps) {
+  return (
+    <div className="page">
+      <SectionTitle
+        label="INSIDER VOICES"
+        title="Hear from people who have made the journey."
+        copy="Real voices will appear here after they are approved."
+      />
+      <div className="voices-grid">
+        {[1, 2, 3].map((n) => (
+          <figure className="voice" key={n}>
+            <StatusBadge status="TBC" />
+            <blockquote>“[INSERT APPROVED QUOTE]”</blockquote>
+            <figcaption>[INSERT NAME, ROLE]</figcaption>
+          </figure>
+        ))}
+      </div>
+      <WhatNext next="mission" onGo={go} />
+    </div>
+  );
+}
+function MissionPage({ go }: ContentProps) {
+  const [goals, setGoals] = useState<{ t: string; done: boolean }[]>(() =>
+    loadLocal(
+      "mission",
+      DEFAULT_GOALS.map((t) => ({ t, done: false })),
+    ),
+  );
+  const [text, setText] = useState("");
+  const save = (n: { t: string; done: boolean }[]) => {
+    setGoals(n);
+    saveLocal("mission", n);
+  };
+  return (
+    <div className="page">
+      <SectionTitle
+        label="MY 90-DAY MISSION"
+        title="Choose what you want to carry forward."
+        copy="No scores. Just meaningful progress you can see."
+      />
+      <section className="section-block">
+        <div className="mission-list">
+          {goals.map((g, i) => (
+            <label key={`${g.t}-${i}`}>
+              <input
+                type="checkbox"
+                checked={g.done}
+                onChange={() => save(goals.map((x, j) => (j === i ? { ...x, done: !x.done } : x)))}
+              />
+              <span>
+                <Check />
+              </span>
+              <strong>{g.t}</strong>
+            </label>
+          ))}
+        </div>
+        <form
+          className="goal-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (text.trim()) {
+              save([...goals, { t: text.trim(), done: false }]);
+              setText("");
+            }
+          }}
+        >
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Add your own goal"
+            aria-label="New mission goal"
+          />
+          <Button variant="primary">Add goal</Button>
+        </form>
+      </section>
+      <PhaseCard
+        current={Math.max(1, Math.round((goals.filter((g) => g.done).length / goals.length) * 6))}
+      />
+      <WhatNext next="final" onGo={go} />
+    </div>
+  );
+}
+function FinalPage({ go }: ContentProps) {
+  return (
+    <div className="page final-page">
+      <div className="final-mark">
+        <Zap />
+      </div>
+      <p className="eyebrow">CLOSE THE LOOP · 11–18 DEC</p>
+      <h1>You made it.</h1>
+      <p>
+        Your 90-day journey ends with Demo Day and felicitation. Take your learning, questions, and
+        mission into what comes next.
+      </p>
+      <StatusBadge status="TBC" />
+      <div className="notice">
+        <AlertTriangle />
+        Phase 6 overlaps Phase 5 on 11 December. The dates are shown exactly as provided and need
+        confirmation.
+      </div>
+      <Button variant="primary" onClick={() => go("home")}>
+        Return home
+        <ArrowRight />
+      </Button>
+    </div>
+  );
+}
+
+function Panel({
+  type,
+  close,
+  go,
+  simple,
+  setSimple,
+  announce,
+}: {
+  type: string;
+  close: () => void;
+  go: (p: Page) => void;
+  simple: boolean;
+  setSimple: (v: boolean) => void;
+  announce: (s: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [answer, setAnswer] = useState<(typeof FAQ)[number] | null>(null);
+  const matches = NAV_ITEMS.filter(
+    ([, label]) =>
+      label.toLowerCase().includes(query.toLowerCase()) ||
+      (
+        {
+          arrive: "travel airport train road check in reimbursement",
+          basecamp: "room food gym city shuttle pharmacy atm",
+          esyasoft: "bess mdms company grid domains",
+          days: "schedule session phase calendar",
+          learning: "notes skills reflection",
+          toolkit: "zoom teams zoho setup",
+          mission: "goals progress",
+        } as Record<string, string>
+      )[label.toLowerCase()]?.includes(query.toLowerCase()),
+  ).slice(0, 5);
+  const ask = (q: string) => {
+    setQuery(q);
+    const words = q.toLowerCase().split(/\W+/);
+    const ranked = FAQ.map((f) => ({
+      ...f,
+      score: words.filter((w) => w.length > 2 && (f.keys + f.q).toLowerCase().includes(w)).length,
+    })).sort((a, b) => b.score - a.score);
+    const best = ranked[0];
+    setAnswer(
+      best?.score
+        ? best
+        : {
+            q: "Unknown",
+            keys: "",
+            a: "I don't have confirmed information for that yet. Please check with the programme team at [INSERT CONTACT].",
+            status: "TBC",
+            page: "home",
+          },
+    );
+  };
+  return (
+    <div
+      className="panel-backdrop"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) close();
+      }}
+    >
+      <section className="drawer" role="dialog" aria-modal="true" aria-label={type}>
+        <header>
+          <div>
+            <p className="eyebrow">ESYASOFT IGNITE</p>
+            <h2>
+              {type === "help"
+                ? "Need help now?"
+                : type === "chat"
+                  ? "Ask Ignite"
+                  : type === "search"
+                    ? "Where do you need to go?"
+                    : "More"}
+            </h2>
+          </div>
+          <Button size="icon" onClick={close} aria-label="Close">
+            <X />
+          </Button>
+        </header>
+        {type === "help" && (
+          <div className="help-list">
+            {HELP_CASES.map((x) => (
+              <details key={x}>
+                <summary>
+                  {x}
+                  <ChevronDown />
+                </summary>
+                <ol>
+                  <li>Move to a safe, visible place.</li>
+                  <li>Keep your ID and travel details with you.</li>
+                  <li>Contact the programme team at [INSERT CONTACT].</li>
+                </ol>
+                <StatusBadge status="TBC" />
+              </details>
+            ))}
+          </div>
+        )}
+        {type === "search" && (
+          <>
+            <label className="searchbox">
+              <Search />
+              <input
+                autoFocus
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Try room, shuttle, schedule…"
+              />
+            </label>
+            {query && (
+              <div className="results">
+                {matches.map(([id, label]) => (
+                  <button key={id} onClick={() => go(id)}>
+                    <strong>{label}</strong>
+                    <ArrowRight />
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+        {type === "chat" && (
+          <>
+            <p className="chat-intro">
+              No question is too small. Answers only use confirmed or clearly labelled information.
+            </p>
+            <form
+              className="searchbox"
+              onSubmit={(e) => {
+                e.preventDefault();
+                ask(query);
+              }}
+            >
+              <MessageCircle />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Ask about travel, campus or the programme"
+              />
+              <Button variant="primary" size="sm">
+                Ask
+              </Button>
+            </form>
+            <div className="chips">
+              {FAQ.slice(0, 4).map((f) => (
+                <button onClick={() => ask(f.q)} key={f.q}>
+                  {f.q}
+                </button>
+              ))}
+            </div>
+            {answer && (
+              <div className="chat-answer" aria-live="polite">
+                <StatusBadge status={answer.status} />
+                <p>{answer.a}</p>
+                <Button size="sm" onClick={() => go(answer.page as Page)}>
+                  Take me there
+                  <ArrowRight />
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+        {type === "more" && (
+          <div className="more-list">
+            {NAV_ITEMS.slice(4).map(([id, label]) => (
+              <button key={id} onClick={() => go(id)}>
+                {label}
+                <ArrowRight />
+              </button>
+            ))}
+            <label className="toggle-row">
+              Simple View
+              <input
+                type="checkbox"
+                checked={simple}
+                onChange={(e) => setSimple(e.target.checked)}
+              />
+            </label>
+            <Button
+              variant="danger"
+              onClick={() => {
+                if (window.confirm("Reset all progress saved on this device?")) {
+                  resetLocal();
+                  announce("Progress reset");
+                  window.location.reload();
+                }
+              }}
+            >
+              <RotateCcw />
+              Reset progress
+            </Button>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
