@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { AlertTriangle, ArrowRight, BookOpen, CalendarDays, Check, ChevronDown, CircleHelp, Clipboard, Compass, Download, Home, LayoutGrid, MapPin, Menu, MessageCircle, NotebookPen, RotateCcw, Search, ShieldCheck, Sparkles, Target, ToolCase, Users, X, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ARRIVAL_CHECKLIST, DEFAULT_GOALS, DOMAINS, FAQ, HELP_CASES, NAV_ITEMS, PHASES, SCHEDULE, SKILLS, TOOLKIT_ITEMS, type Status } from "@/lib/ignite-config";
@@ -65,7 +65,7 @@ function Brand({compact=false}:{compact?:boolean}) { return <div className={comp
 function MobileNav({page,go,more}:{page:Page;go:(p:Page)=>void;more:()=>void}) { const items: Page[]=["home","arrive","days","learning"]; return <nav className="mobile-nav">{items.map(id=>{const I=icons[id];return <button className={page===id?"active":""} onClick={()=>go(id)} key={id}><I size={20}/><span>{NAV_ITEMS.find(n=>n[0]===id)?.[1]}</span></button>})}<button onClick={more}><Menu size={20}/><span>More</span></button></nav>; }
 
 type ContentProps={go:(p:Page)=>void;journey:ReturnType<typeof getJourney>;announce:(s:string)=>void};
-const pageContent: Record<Page,(p:ContentProps)=>React.ReactNode> = {
+const pageContent: Record<Page,(p:ContentProps)=>ReactNode> = {
   home: HomePage, arrive: ArrivePage, basecamp: BasecampPage, esyasoft: EsyasoftPage, days: DaysPage,
   learning: LearningPage, toolkit: ToolkitPage, voices: VoicesPage, mission: MissionPage, final: FinalPage,
 };
