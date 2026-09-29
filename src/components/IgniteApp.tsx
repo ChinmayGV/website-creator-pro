@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { AlertTriangle, ArrowRight, BookOpen, CalendarDays, Check, ChevronDown, CircleHelp, Clipboard, Compass, Download, Home, LayoutGrid, MapPin, Menu, MessageCircle, NotebookPen, RotateCcw, Search, ShieldCheck, Sparkles, Target, ToolCase, Users, X, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ARRIVAL_CHECKLIST, DEFAULT_GOALS, DOMAINS, FAQ, HELP_CASES, NAV_ITEMS, PHASES, SCHEDULE, SKILLS, TOOLKIT_ITEMS, type Status } from "@/lib/ignite-config";
+import { ADDITIONAL_FAQ, ARRIVAL_CHECKLIST, DEFAULT_GOALS, DOMAINS, FAQ, HELP_CASES, NAV_ITEMS, PHASES, SCHEDULE, SKILLS, TOOLKIT_ITEMS, type Status } from "@/lib/ignite-config";
 import { loadLocal, resetLocal, saveLocal } from "@/lib/ignite-storage";
+import { PhaseActivities, ProgrammeCalendar, TravelModes } from "./IgniteExtras";
 
 type Page = typeof NAV_ITEMS[number][0];
 const icons: Record<Page, typeof Home> = { home: Home, arrive: MapPin, basecamp: Compass, esyasoft: LayoutGrid, days: CalendarDays, learning: NotebookPen, toolkit: ToolCase, voices: Users, mission: Target, final: Sparkles };
@@ -52,10 +53,11 @@ export default function IgniteApp() {
     </aside>
     <div className="app-column">
       <header className="topbar"><Brand compact/><div className="top-actions"><span className="date-chip">{new Intl.DateTimeFormat("en-GB",{day:"2-digit",month:"short",year:"numeric"}).format(new Date(`${dateText}T12:00:00`))}</span><Button size="sm" onClick={()=>setSimple(v=>!v)}>{simple?"Full view":"Simple view"}</Button><Button size="sm" onClick={()=>setPresentation(v=>!v)}>{presentation?"Exit present":"Present"}</Button><Button variant="primary" size="sm" onClick={()=>setPanel("chat")}><MessageCircle size={15}/> Ask Ignite</Button></div></header>
-      <main id="main" tabIndex={-1}><Current go={go} journey={journey} announce={announce}/></main>
+      <main id="main" tabIndex={-1}><Current go={go} journey={journey} announce={announce}/>{params.get("audit")==="1"&&<section className="audit page"><p className="eyebrow">PROGRAMME TEAM REVIEW</p><h2>Details still to confirm</h2><ul><li>Campus address, gate, arrival contact and reporting time</li><li>Pickup and reimbursement policy</li><li>Wi-Fi, badge and dress policy</li><li>Accommodation, food and local essentials</li><li>11 December phase overlap and 02 October holiday status</li><li>Company-specific domain details, programme sessions and insider quotes</li><li>{ADDITIONAL_FAQ.length} unanswered guide questions</li></ul></section>}</main>
       <footer className="app-footer"><span><span className="live-dot"/>Local-only progress · no data leaves this device</span><Button onClick={()=>setPanel("help")}><CircleHelp size={17}/> Need Help Now</Button></footer>
     </div>
     <MobileNav page={page} go={go} more={()=>setPanel("more")}/>
+    <Button className="mobile-help" onClick={()=>setPanel("help")} aria-label="Need Help Now"><CircleHelp size={18}/> Need Help Now</Button>
     {panel && <Panel type={panel} close={()=>setPanel(null)} go={go} simple={simple} setSimple={setSimple} announce={announce}/>} 
     <div className="toast" aria-live="polite">{toast}</div>
   </div>;
