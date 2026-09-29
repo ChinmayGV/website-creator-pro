@@ -27,8 +27,8 @@ export function PhaseActivities({ phaseId }: { phaseId: number }) {
     </> : <>
       <h2>Capability Lab</h2>
       <p className="scenario-number">SCENARIO {scenario + 1} OF {scenarios.length}</p>
-      <p>{scenarios[scenario][0]}</p>
-      <details><summary>What might a good approach look like?</summary><p>{scenarios[scenario][1]}</p></details>
+      <p>{scenarios[scenario]?.[0]}</p>
+      <details><summary>What might a good approach look like?</summary><p>{scenarios[scenario]?.[1]}</p></details>
       <Button onClick={() => setScenario((scenario + 1) % scenarios.length)}>Next scenario</Button>
     </>}
   </section>;
