@@ -55,7 +55,7 @@ export function ProgrammeCalendar({ today }: { today: string }) {
   const all = Array.from({ length: days }, (_, offset) => {
     const date = new Date(start.getTime() + offset * 86400000);
     const iso = date.toISOString().slice(0, 10);
-    const short = new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(date);
+    const short = `${String(date.getUTCDate()).padStart(2, "0")} ${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getUTCMonth()]}`;
     const session = SCHEDULE.find(([d]) => d === short);
     const phase = PHASES.find(p => iso >= p.start && iso <= p.end);
     const weekend = date.getDay() === 0 || date.getDay() === 6;
